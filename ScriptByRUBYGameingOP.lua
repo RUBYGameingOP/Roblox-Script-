@@ -1,15 +1,15 @@
---// Universal Speed Hack GUI v1.1 (With Typing Intro + Cleanup)
+--// Universal Speed Hack GUI v1.5 (Mobile Button Fly + Typing Intro + Cleanup)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
--- Connections (to cleanup later)
+-- Connections
 local speedConnection
 local jumpConnection
 
--- 🟢 INTRO BOX WITH TYPING (only shows once per run)
+-- 🟢 INTRO BOX
 local introGui = Instance.new("ScreenGui")
 introGui.Name = "IntroGUI"
 introGui.Parent = player:WaitForChild("PlayerGui")
@@ -30,7 +30,6 @@ introLabel.TextSize = 24
 introLabel.Text = ""
 introLabel.Parent = introFrame
 
--- Typing animation
 local message = "Subscribe To RUBYGameingOP!!!"
 for i = 1, #message do
     introLabel.Text = string.sub(message, 1, i)
@@ -40,17 +39,18 @@ wait(2)
 introGui:Destroy()
 
 -- 🟢 MAIN GUI
-
--- Get Humanoid
 local function getHumanoid()
     local char = player.Character or player.CharacterAdded:Wait()
     return char:WaitForChild("Humanoid")
 end
 
--- Settings
 local desiredSpeed = 16
 local infiniteJump = false
 local minimized = false
+local flying = false
+local flySpeed = 50
+local bodyVelocity
+local vertical = 0
 
 -- GUI
 local screenGui = Instance.new("ScreenGui")
@@ -58,7 +58,7 @@ screenGui.Name = "SpeedHackGUI"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0,300,0,220)
+mainFrame.Size = UDim2.new(0,300,0,300)
 mainFrame.Position = UDim2.new(0.3,0,0.3,0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
 mainFrame.BorderSizePixel = 0
@@ -71,7 +71,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,-30,0,30)
 title.Position = UDim2.new(0,0,0,0)
 title.BackgroundColor3 = Color3.fromRGB(25,25,25)
-title.Text = "⚡ Speed Hack v1.1"
+title.Text = "⚡ Speed Hack v1.5"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 18
@@ -133,6 +133,17 @@ infJumpButton.Font = Enum.Font.SourceSansBold
 infJumpButton.TextSize = 16
 infJumpButton.Parent = mainFrame
 
+-- Fly Button
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(1,-20,0,40)
+flyButton.Position = UDim2.new(0,10,0,200)
+flyButton.BackgroundColor3 = Color3.fromRGB(0,150,255)
+flyButton.Text = "Fly: OFF"
+flyButton.TextColor3 = Color3.new(1,1,1)
+flyButton.Font = Enum.Font.SourceSansBold
+flyButton.TextSize = 16
+flyButton.Parent = mainFrame
+
 -- Credit
 local creditLabel = Instance.new("TextLabel")
 creditLabel.Size = UDim2.new(1,0,0,20)
@@ -155,9 +166,7 @@ end)
 -- Button Functions
 setButton.MouseButton1Click:Connect(function()
     local newSpeed = tonumber(speedBox.Text)
-    if newSpeed then
-        desiredSpeed = newSpeed
-    end
+    if newSpeed then desiredSpeed = newSpeed end
 end)
 
 resetButton.MouseButton1Click:Connect(function()
@@ -169,6 +178,23 @@ infJumpButton.MouseButton1Click:Connect(function()
     infiniteJump = not infiniteJump
     infJumpButton.Text = infiniteJump and "Infinite Jump: ON" or "Infinite Jump: OFF"
     infJumpButton.BackgroundColor3 = infiniteJump and Color3.fromRGB(0,200,0) or Color3.fromRGB(100,100,100)
+end)
+
+flyButton.MouseButton1Click:Connect(function()
+    flying = not flying
+    flyButton.Text = flying and "Fly: ON" or "Fly: OFF"
+    local char = player.Character
+    if char then
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if flying then
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.MaxForce = Vector3.new(1e5,1e5,1e5)
+            bodyVelocity.Velocity = Vector3.new(0,0,0)
+            bodyVelocity.Parent = hrp
+        else
+            if bodyVelocity then bodyVelocity:Destroy() end
+        end
+    end
 end)
 
 -- Infinite Jump Logic
@@ -189,23 +215,59 @@ minimizeBtn.MouseButton1Click:Connect(function()
             child.Visible = not minimized
         end
     end
-    mainFrame.Size = minimized and UDim2.new(0,300,0,35) or UDim2.new(0,300,0,220)
+    mainFrame.Size = minimized and UDim2.new(0,300,0,35) or UDim2.new(0,300,0,300)
     minimizeBtn.Text = minimized and "+" or "-"
+end)
+
+-- 🟢 Mobile Fly Buttons
+local upBtn = Instance.new("TextButton")
+upBtn.Size = UDim2.new(0,60,0,60)
+upBtn.Position = UDim2.new(0.85,0,0.6,0)
+upBtn.Text = "Up"
+upBtn.BackgroundColor3 = Color3.fromRGB(0,200,0)
+upBtn.Parent = screenGui
+
+local downBtn = Instance.new("TextButton")
+downBtn.Size = UDim2.new(0,60,0,60)
+downBtn.Position = UDim2.new(0.85,0,0.75,0)
+downBtn.Text = "Down"
+downBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+downBtn.Parent = screenGui
+
+vertical = 0
+upBtn.MouseButton1Down:Connect(function() vertical = 1 end)
+upBtn.MouseButton1Up:Connect(function() vertical = 0 end)
+downBtn.MouseButton1Down:Connect(function() vertical = -1 end)
+downBtn.MouseButton1Up:Connect(function() vertical = 0 end)
+
+-- Fly Movement
+RunService.RenderStepped:Connect(function()
+    if flying and bodyVelocity and player.Character then
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if humanoid and hrp then
+            local dir = humanoid.MoveDirection
+            local velocity = Vector3.new(dir.X, vertical, dir.Z)
+            if velocity.Magnitude > 0 then
+                bodyVelocity.Velocity = velocity.Unit * flySpeed
+            else
+                bodyVelocity.Velocity = Vector3.new(0,0,0)
+            end
+        end
+    end
 end)
 
 -- 🟢 Cleanup on Death
 local function onCharacterAdded(char)
     local humanoid = char:WaitForChild("Humanoid")
     humanoid.Died:Connect(function()
-        -- Reset hacks
         desiredSpeed = 16
         infiniteJump = false
-
-        -- Disconnect connections
+        flying = false
+        vertical = 0
+        if bodyVelocity then bodyVelocity:Destroy() end
         if speedConnection then speedConnection:Disconnect() end
         if jumpConnection then jumpConnection:Disconnect() end
-
-        -- Destroy GUI
         if screenGui then screenGui:Destroy() end
     end)
 end
