@@ -1,4 +1,4 @@
---// Universal Speed Hack GUI v1.5 (Mobile Button Fly + Typing Intro + Cleanup)
+--// Universal Speed Hack GUI v1.1 + Teleport GUI (RUBYGameingOP)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -58,7 +58,7 @@ screenGui.Name = "SpeedHackGUI"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0,300,0,300)
+mainFrame.Size = UDim2.new(0,300,0,340)
 mainFrame.Position = UDim2.new(0.3,0,0.3,0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
 mainFrame.BorderSizePixel = 0
@@ -71,7 +71,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,-30,0,30)
 title.Position = UDim2.new(0,0,0,0)
 title.BackgroundColor3 = Color3.fromRGB(25,25,25)
-title.Text = "⚡ Speed Hack v1.5"
+title.Text = "⚡ Universal Hack v1.1"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 18
@@ -144,6 +144,17 @@ flyButton.Font = Enum.Font.SourceSansBold
 flyButton.TextSize = 16
 flyButton.Parent = mainFrame
 
+-- Teleport Menu Button
+local tpMenuBtn = Instance.new("TextButton")
+tpMenuBtn.Size = UDim2.new(1,-20,0,40)
+tpMenuBtn.Position = UDim2.new(0,10,0,250)
+tpMenuBtn.BackgroundColor3 = Color3.fromRGB(200,100,0)
+tpMenuBtn.Text = "Teleport Menu"
+tpMenuBtn.TextColor3 = Color3.new(1,1,1)
+tpMenuBtn.Font = Enum.Font.SourceSansBold
+tpMenuBtn.TextSize = 16
+tpMenuBtn.Parent = mainFrame
+
 -- Credit
 local creditLabel = Instance.new("TextLabel")
 creditLabel.Size = UDim2.new(1,0,0,20)
@@ -215,8 +226,85 @@ minimizeBtn.MouseButton1Click:Connect(function()
             child.Visible = not minimized
         end
     end
-    mainFrame.Size = minimized and UDim2.new(0,300,0,35) or UDim2.new(0,300,0,300)
+    mainFrame.Size = minimized and UDim2.new(0,300,0,35) or UDim2.new(0,300,0,340)
     minimizeBtn.Text = minimized and "+" or "-"
+end)
+
+-- 🟢 Teleport Menu
+local tpGui = Instance.new("Frame")
+tpGui.Size = UDim2.new(0,250,0,300)
+tpGui.Position = UDim2.new(0.6,0,0.3,0)
+tpGui.BackgroundColor3 = Color3.fromRGB(50,50,50)
+tpGui.Active = true
+tpGui.Draggable = true
+tpGui.Visible = false
+tpGui.Parent = screenGui
+
+local tpTitle = Instance.new("TextLabel")
+tpTitle.Size = UDim2.new(1,-30,0,30)
+tpTitle.BackgroundColor3 = Color3.fromRGB(25,25,25)
+tpTitle.Text = "Teleport Menu"
+tpTitle.TextColor3 = Color3.fromRGB(255,255,255)
+tpTitle.Font = Enum.Font.SourceSansBold
+tpTitle.TextSize = 18
+tpTitle.Parent = tpGui
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0,30,0,30)
+closeBtn.Position = UDim2.new(1,-30,0,0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 18
+closeBtn.Parent = tpGui
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1,0,1,-30)
+scroll.Position = UDim2.new(0,0,0,30)
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+scroll.Parent = tpGui
+
+-- Populate Players
+local function refreshPlayers()
+    scroll:ClearAllChildren()
+    local y = 0
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1,-10,0,30)
+            btn.Position = UDim2.new(0,5,0,y)
+            btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+            btn.Text = plr.Name
+            btn.TextColor3 = Color3.new(1,1,1)
+            btn.Parent = scroll
+
+            btn.MouseButton1Click:Connect(function()
+                if player.Character and plr.Character then
+                    local myRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    local targetRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                    if myRoot and targetRoot then
+                        myRoot.CFrame = targetRoot.CFrame + Vector3.new(2,0,0)
+                    end
+                end
+            end)
+
+            y = y + 35
+        end
+    end
+    scroll.CanvasSize = UDim2.new(0,0,0,y)
+end
+
+Players.PlayerAdded:Connect(refreshPlayers)
+Players.PlayerRemoving:Connect(refreshPlayers)
+tpMenuBtn.MouseButton1Click:Connect(function()
+    tpGui.Visible = true
+    refreshPlayers()
+end)
+closeBtn.MouseButton1Click:Connect(function()
+    tpGui.Visible = false
 end)
 
 -- 🟢 Mobile Fly Buttons
