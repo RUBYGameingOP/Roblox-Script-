@@ -1,13 +1,27 @@
---// Universal Speed Hack GUI v1.1 + Teleport GUI (RUBYGameingOP)
+--// Universal Hack GUI v1.2 (Fully Merged with Mobile Fly & Teleport)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
--- Connections
+-- Variables
+local desiredSpeed = 16
+local infiniteJump = false
+local flying = false
+local flySpeed = 50
+local bodyVelocity
+local flyConnection
+local minimized = false
+local vertical = 0
 local speedConnection
 local jumpConnection
+
+-- Helper: Get Humanoid
+local function getHumanoid()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("Humanoid")
+end
 
 -- 🟢 INTRO BOX
 local introGui = Instance.new("ScreenGui")
@@ -24,10 +38,11 @@ introFrame.Parent = introGui
 local introLabel = Instance.new("TextLabel")
 introLabel.Size = UDim2.new(1,0,1,0)
 introLabel.BackgroundTransparency = 1
-introLabel.TextColor3 = Color3.fromRGB(255,255,255)
+introLabel.TextColor3 = Color3.fromRGB(0,255,0)
 introLabel.Font = Enum.Font.SourceSansBold
 introLabel.TextSize = 24
 introLabel.Text = ""
+introLabel.TextWrapped = true
 introLabel.Parent = introFrame
 
 local message = "Subscribe To RUBYGameingOP!!!"
@@ -35,136 +50,123 @@ for i = 1, #message do
     introLabel.Text = string.sub(message, 1, i)
     wait(0.05)
 end
-wait(2)
+wait(3)
 introGui:Destroy()
 
 -- 🟢 MAIN GUI
-local function getHumanoid()
-    local char = player.Character or player.CharacterAdded:Wait()
-    return char:WaitForChild("Humanoid")
-end
-
-local desiredSpeed = 16
-local infiniteJump = false
-local minimized = false
-local flying = false
-local flySpeed = 50
-local bodyVelocity
-local vertical = 0
-
--- GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SpeedHackGUI"
+screenGui.Name = "HackGUI"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0,300,0,340)
-mainFrame.Position = UDim2.new(0.3,0,0.3,0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+mainFrame.Size = UDim2.new(0,420,0,220)
+mainFrame.Position = UDim2.new(0.5,-210,0.5,-110)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
--- Title
+-- Title Bar
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1,0,0,30)
+topBar.BackgroundColor3 = Color3.fromRGB(35,35,35)
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-30,0,30)
-title.Position = UDim2.new(0,0,0,0)
-title.BackgroundColor3 = Color3.fromRGB(25,25,25)
-title.Text = "⚡ Universal Hack v1.1"
+title.Size = UDim2.new(1,-30,1,0)
+title.Position = UDim2.new(0,10,0,0)
+title.BackgroundTransparency = 1
+title.Text = "⚡ Universal Hack v1.2"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 18
-title.Parent = mainFrame
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = topBar
 
--- Minimize Button
 local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0,30,0,30)
+minimizeBtn.Size = UDim2.new(0,30,1,0)
 minimizeBtn.Position = UDim2.new(1,-30,0,0)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(150,150,150)
 minimizeBtn.Text = "-"
-minimizeBtn.TextColor3 = Color3.new(1,1,1)
+minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 minimizeBtn.Font = Enum.Font.SourceSansBold
-minimizeBtn.TextSize = 18
-minimizeBtn.Parent = mainFrame
+minimizeBtn.TextSize = 20
+minimizeBtn.BackgroundTransparency = 1
+minimizeBtn.Parent = topBar
 
--- Speed Input Box
+-- Container for buttons
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1,-20,1,-50)
+container.Position = UDim2.new(0,10,0,40)
+container.BackgroundTransparency = 1
+container.Parent = mainFrame
+
+local layout = Instance.new("UIGridLayout")
+layout.CellSize = UDim2.new(0,190,0,40)
+layout.CellPadding = UDim2.new(0,10,0,10)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.Parent = container
+
+-- Helper: Create Button
+local function createBtn(text, color)
+    local btn = Instance.new("TextButton")
+    btn.Text = text
+    btn.Size = UDim2.new(0,190,0,40)
+    btn.BackgroundColor3 = color or Color3.fromRGB(45,45,45)
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 16
+    btn.Parent = container
+    return btn
+end
+
+-- Speed Box + Buttons
 local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(0.6,0,0,40)
-speedBox.Position = UDim2.new(0,10,0,50)
-speedBox.BackgroundColor3 = Color3.fromRGB(60,60,60)
 speedBox.Text = "16"
+speedBox.Size = UDim2.new(0,190,0,40)
+speedBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
 speedBox.TextColor3 = Color3.fromRGB(255,255,255)
-speedBox.Font = Enum.Font.SourceSans
+speedBox.Font = Enum.Font.SourceSansBold
 speedBox.TextSize = 16
 speedBox.ClearTextOnFocus = false
-speedBox.Parent = mainFrame
+speedBox.Parent = container
 
--- Set Speed Button
-local setButton = Instance.new("TextButton")
-setButton.Size = UDim2.new(0.35,0,0,40)
-setButton.Position = UDim2.new(0.625,0,0,50)
-setButton.BackgroundColor3 = Color3.fromRGB(80,80,80)
-setButton.Text = "Set Speed"
-setButton.TextColor3 = Color3.fromRGB(255,255,255)
-setButton.Font = Enum.Font.SourceSansBold
-setButton.TextSize = 16
-setButton.Parent = mainFrame
+local setSpeedBtn = createBtn("Set Speed")
+local resetBtn = createBtn("Reset Speed")
+local jumpBtn = createBtn("Infinite Jump: OFF")
+local flyBtn = createBtn("Fly: OFF")
+local tpBtn = createBtn("Teleport Menu", Color3.fromRGB(70,40,0))
 
--- Reset Speed Button
-local resetButton = Instance.new("TextButton")
-resetButton.Size = UDim2.new(1,-20,0,40)
-resetButton.Position = UDim2.new(0,10,0,100)
-resetButton.BackgroundColor3 = Color3.fromRGB(80,80,80)
-resetButton.Text = "Reset Speed"
-resetButton.TextColor3 = Color3.fromRGB(255,255,255)
-resetButton.Font = Enum.Font.SourceSansBold
-resetButton.TextSize = 16
-resetButton.Parent = mainFrame
+-- Fly Up/Down buttons (mobile)
+local upBtn = Instance.new("TextButton")
+upBtn.Size = UDim2.new(0,60,0,60)
+upBtn.Position = UDim2.new(0.85,0,0.6,0)
+upBtn.Text = "Up"
+upBtn.BackgroundColor3 = Color3.fromRGB(0,200,0)
+upBtn.Visible = false
+upBtn.Parent = screenGui
 
--- Infinite Jump Button
-local infJumpButton = Instance.new("TextButton")
-infJumpButton.Size = UDim2.new(1,-20,0,40)
-infJumpButton.Position = UDim2.new(0,10,0,150)
-infJumpButton.BackgroundColor3 = Color3.fromRGB(100,100,100)
-infJumpButton.Text = "Infinite Jump: OFF"
-infJumpButton.TextColor3 = Color3.new(1,1,1)
-infJumpButton.Font = Enum.Font.SourceSansBold
-infJumpButton.TextSize = 16
-infJumpButton.Parent = mainFrame
+local downBtn = Instance.new("TextButton")
+downBtn.Size = UDim2.new(0,60,0,60)
+downBtn.Position = UDim2.new(0.85,0,0.75,0)
+downBtn.Text = "Down"
+downBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+downBtn.Visible = false
+downBtn.Parent = screenGui
 
--- Fly Button
-local flyButton = Instance.new("TextButton")
-flyButton.Size = UDim2.new(1,-20,0,40)
-flyButton.Position = UDim2.new(0,10,0,200)
-flyButton.BackgroundColor3 = Color3.fromRGB(0,150,255)
-flyButton.Text = "Fly: OFF"
-flyButton.TextColor3 = Color3.new(1,1,1)
-flyButton.Font = Enum.Font.SourceSansBold
-flyButton.TextSize = 16
-flyButton.Parent = mainFrame
-
--- Teleport Menu Button
-local tpMenuBtn = Instance.new("TextButton")
-tpMenuBtn.Size = UDim2.new(1,-20,0,40)
-tpMenuBtn.Position = UDim2.new(0,10,0,250)
-tpMenuBtn.BackgroundColor3 = Color3.fromRGB(200,100,0)
-tpMenuBtn.Text = "Teleport Menu"
-tpMenuBtn.TextColor3 = Color3.new(1,1,1)
-tpMenuBtn.Font = Enum.Font.SourceSansBold
-tpMenuBtn.TextSize = 16
-tpMenuBtn.Parent = mainFrame
-
--- Credit
-local creditLabel = Instance.new("TextLabel")
-creditLabel.Size = UDim2.new(1,0,0,20)
-creditLabel.Position = UDim2.new(0,0,1,-20)
-creditLabel.BackgroundTransparency = 1
-creditLabel.Text = "Credit: RUBYGameingOP"
-creditLabel.TextColor3 = Color3.fromRGB(255,150,50)
-creditLabel.Font = Enum.Font.SourceSansBold
-creditLabel.TextSize = 14
-creditLabel.Parent = mainFrame
+-- Credits
+local credit = Instance.new("TextLabel")
+credit.Size = UDim2.new(1,0,0,20)
+credit.Position = UDim2.new(0,0,1,-20)
+credit.BackgroundTransparency = 1
+credit.Text = "Made by RUBYGameingOP"
+credit.TextColor3 = Color3.fromRGB(200,200,200)
+credit.Font = Enum.Font.SourceSansBold
+credit.TextSize = 14
+credit.Parent = mainFrame
 
 -- Persistent Speed Hack
 speedConnection = RunService.Heartbeat:Connect(function()
@@ -174,63 +176,89 @@ speedConnection = RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Button Functions
-setButton.MouseButton1Click:Connect(function()
-    local newSpeed = tonumber(speedBox.Text)
-    if newSpeed then desiredSpeed = newSpeed end
+-- Buttons Functions
+setSpeedBtn.MouseButton1Click:Connect(function()
+    local val = tonumber(speedBox.Text)
+    if val then desiredSpeed = val end
 end)
 
-resetButton.MouseButton1Click:Connect(function()
+resetBtn.MouseButton1Click:Connect(function()
     desiredSpeed = 16
     speedBox.Text = "16"
 end)
 
-infJumpButton.MouseButton1Click:Connect(function()
+jumpBtn.MouseButton1Click:Connect(function()
     infiniteJump = not infiniteJump
-    infJumpButton.Text = infiniteJump and "Infinite Jump: ON" or "Infinite Jump: OFF"
-    infJumpButton.BackgroundColor3 = infiniteJump and Color3.fromRGB(0,200,0) or Color3.fromRGB(100,100,100)
+    jumpBtn.Text = infiniteJump and "Infinite Jump: ON" or "Infinite Jump: OFF"
+    jumpBtn.BackgroundColor3 = infiniteJump and Color3.fromRGB(0,170,0) or Color3.fromRGB(45,45,45)
 end)
 
-flyButton.MouseButton1Click:Connect(function()
+UIS.JumpRequest:Connect(function()
+    if infiniteJump and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- Fly Logic
+flyBtn.MouseButton1Click:Connect(function()
     flying = not flying
-    flyButton.Text = flying and "Fly: ON" or "Fly: OFF"
-    local char = player.Character
-    if char then
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if flying then
+    flyBtn.Text = flying and "Fly: ON" or "Fly: OFF"
+    flyBtn.BackgroundColor3 = flying and Color3.fromRGB(0,170,0) or Color3.fromRGB(45,45,45)
+    upBtn.Visible = flying and not minimized
+    downBtn.Visible = flying and not minimized
+
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if flying and hrp then
+        if not bodyVelocity then
             bodyVelocity = Instance.new("BodyVelocity")
             bodyVelocity.MaxForce = Vector3.new(1e5,1e5,1e5)
             bodyVelocity.Velocity = Vector3.new(0,0,0)
             bodyVelocity.Parent = hrp
-        else
-            if bodyVelocity then bodyVelocity:Destroy() end
+        end
+    elseif bodyVelocity then
+        bodyVelocity:Destroy()
+        bodyVelocity = nil
+    end
+end)
+
+-- Fly Up/Down mobile buttons
+upBtn.MouseButton1Down:Connect(function() vertical = 1 end)
+upBtn.MouseButton1Up:Connect(function() vertical = 0 end)
+downBtn.MouseButton1Down:Connect(function() vertical = -1 end)
+downBtn.MouseButton1Up:Connect(function() vertical = 0 end)
+
+-- Fly Movement
+RunService.RenderStepped:Connect(function()
+    if flying and bodyVelocity and player.Character then
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if humanoid and hrp then
+            local dir = humanoid.MoveDirection
+            local velocity = Vector3.new(dir.X, vertical, dir.Z)
+            if velocity.Magnitude > 0 then
+                bodyVelocity.Velocity = velocity.Unit * flySpeed
+            else
+                bodyVelocity.Velocity = Vector3.new(0,0,0)
+            end
         end
     end
 end)
 
--- Infinite Jump Logic
-jumpConnection = UIS.JumpRequest:Connect(function()
-    if infiniteJump then
-        local h = getHumanoid()
-        if h and h.Health > 0 then
-            h:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
--- Minimize GUI
+-- Minimize Button
 minimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
     for _, child in pairs(mainFrame:GetChildren()) do
-        if child ~= title and child ~= minimizeBtn and child ~= creditLabel then
+        if child ~= topBar and child ~= title and child ~= minimizeBtn and child ~= credit then
             child.Visible = not minimized
         end
     end
-    mainFrame.Size = minimized and UDim2.new(0,300,0,35) or UDim2.new(0,300,0,340)
+    upBtn.Visible = flying and not minimized
+    downBtn.Visible = flying and not minimized
+    mainFrame.Size = minimized and UDim2.new(0,420,0,30) or UDim2.new(0,420,0,220)
     minimizeBtn.Text = minimized and "+" or "-"
 end)
 
--- 🟢 Teleport Menu
+-- Teleport Menu
 local tpGui = Instance.new("Frame")
 tpGui.Size = UDim2.new(0,250,0,300)
 tpGui.Position = UDim2.new(0.6,0,0.3,0)
@@ -280,7 +308,6 @@ local function refreshPlayers()
             btn.Text = plr.Name
             btn.TextColor3 = Color3.new(1,1,1)
             btn.Parent = scroll
-
             btn.MouseButton1Click:Connect(function()
                 if player.Character and plr.Character then
                     local myRoot = player.Character:FindFirstChild("HumanoidRootPart")
@@ -290,7 +317,6 @@ local function refreshPlayers()
                     end
                 end
             end)
-
             y = y + 35
         end
     end
@@ -299,7 +325,7 @@ end
 
 Players.PlayerAdded:Connect(refreshPlayers)
 Players.PlayerRemoving:Connect(refreshPlayers)
-tpMenuBtn.MouseButton1Click:Connect(function()
+tpBtn.MouseButton1Click:Connect(function()
     tpGui.Visible = true
     refreshPlayers()
 end)
@@ -307,45 +333,7 @@ closeBtn.MouseButton1Click:Connect(function()
     tpGui.Visible = false
 end)
 
--- 🟢 Mobile Fly Buttons
-local upBtn = Instance.new("TextButton")
-upBtn.Size = UDim2.new(0,60,0,60)
-upBtn.Position = UDim2.new(0.85,0,0.6,0)
-upBtn.Text = "Up"
-upBtn.BackgroundColor3 = Color3.fromRGB(0,200,0)
-upBtn.Parent = screenGui
-
-local downBtn = Instance.new("TextButton")
-downBtn.Size = UDim2.new(0,60,0,60)
-downBtn.Position = UDim2.new(0.85,0,0.75,0)
-downBtn.Text = "Down"
-downBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
-downBtn.Parent = screenGui
-
-vertical = 0
-upBtn.MouseButton1Down:Connect(function() vertical = 1 end)
-upBtn.MouseButton1Up:Connect(function() vertical = 0 end)
-downBtn.MouseButton1Down:Connect(function() vertical = -1 end)
-downBtn.MouseButton1Up:Connect(function() vertical = 0 end)
-
--- Fly Movement
-RunService.RenderStepped:Connect(function()
-    if flying and bodyVelocity and player.Character then
-        local humanoid = player.Character:FindFirstChild("Humanoid")
-        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-        if humanoid and hrp then
-            local dir = humanoid.MoveDirection
-            local velocity = Vector3.new(dir.X, vertical, dir.Z)
-            if velocity.Magnitude > 0 then
-                bodyVelocity.Velocity = velocity.Unit * flySpeed
-            else
-                bodyVelocity.Velocity = Vector3.new(0,0,0)
-            end
-        end
-    end
-end)
-
--- 🟢 Cleanup on Death
+-- Cleanup on Death
 local function onCharacterAdded(char)
     local humanoid = char:WaitForChild("Humanoid")
     humanoid.Died:Connect(function()
