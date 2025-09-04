@@ -1,4 +1,4 @@
---// Universal Hack GUI v1.2 (Fully Merged with Mobile Fly & Teleport)
+--// Universal Hack GUI v1.2 (Fully Merged with Mobile Fly & Teleport, Fixed Speed Hack)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -11,7 +11,6 @@ local infiniteJump = false
 local flying = false
 local flySpeed = 50
 local bodyVelocity
-local flyConnection
 local minimized = false
 local vertical = 0
 local speedConnection
@@ -48,9 +47,9 @@ introLabel.Parent = introFrame
 local message = "Subscribe To RUBYGameingOP!!!"
 for i = 1, #message do
     introLabel.Text = string.sub(message, 1, i)
-    wait(0.05)
+    task.wait(0.05)
 end
-wait(3)
+task.wait(3)
 introGui:Destroy()
 
 -- 🟢 MAIN GUI
@@ -168,12 +167,23 @@ credit.Font = Enum.Font.SourceSansBold
 credit.TextSize = 14
 credit.Parent = mainFrame
 
--- Persistent Speed Hack
-speedConnection = RunService.Heartbeat:Connect(function()
+-- ✅ Fixed Speed Hack
+local function applySpeed()
     local h = getHumanoid()
-    if h and h.Health > 0 and h.WalkSpeed ~= desiredSpeed then
+    if h and h.Health > 0 then
         h.WalkSpeed = desiredSpeed
     end
+end
+
+if speedConnection then speedConnection:Disconnect() end
+speedConnection = RunService.RenderStepped:Connect(applySpeed)
+
+player.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid").Died:Connect(function()
+        desiredSpeed = 16
+    end)
+    task.wait(1)
+    applySpeed()
 end)
 
 -- Buttons Functions
@@ -342,9 +352,6 @@ local function onCharacterAdded(char)
         flying = false
         vertical = 0
         if bodyVelocity then bodyVelocity:Destroy() end
-        if speedConnection then speedConnection:Disconnect() end
-        if jumpConnection then jumpConnection:Disconnect() end
-        if screenGui then screenGui:Destroy() end
     end)
 end
 
