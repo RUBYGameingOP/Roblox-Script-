@@ -1,4 +1,4 @@
---// Universal Hack GUI v1.2 (Fully Merged with Mobile Fly & Teleport, Fixed Speed Hack)
+--// Universal Hack GUI v1.2 (Permanent Speed Fix, Fly, Teleport, Intro, Minimize)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -6,7 +6,9 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 -- Variables
-local desiredSpeed = 16
+if _G.DesiredSpeed == nil then
+    _G.DesiredSpeed = 16  -- Global so it survives death/reset
+end
 local infiniteJump = false
 local flying = false
 local flySpeed = 50
@@ -14,7 +16,6 @@ local bodyVelocity
 local minimized = false
 local vertical = 0
 local speedConnection
-local jumpConnection
 
 -- Helper: Get Humanoid
 local function getHumanoid()
@@ -124,7 +125,7 @@ end
 
 -- Speed Box + Buttons
 local speedBox = Instance.new("TextBox")
-speedBox.Text = "16"
+speedBox.Text = tostring(_G.DesiredSpeed)
 speedBox.Size = UDim2.new(0,190,0,40)
 speedBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
 speedBox.TextColor3 = Color3.fromRGB(255,255,255)
@@ -167,33 +168,36 @@ credit.Font = Enum.Font.SourceSansBold
 credit.TextSize = 14
 credit.Parent = mainFrame
 
--- ✅ Fixed Speed Hack
-local function applySpeed()
-    local h = getHumanoid()
-    if h and h.Health > 0 then
-        h.WalkSpeed = desiredSpeed
+-- ✅ Permanent Speed Hack System
+local function applySpeed(h)
+    if h and h.Health > 0 and h.WalkSpeed ~= _G.DesiredSpeed then
+        h.WalkSpeed = _G.DesiredSpeed
     end
 end
 
-if speedConnection then speedConnection:Disconnect() end
-speedConnection = RunService.RenderStepped:Connect(applySpeed)
-
-player.CharacterAdded:Connect(function(char)
-    char:WaitForChild("Humanoid").Died:Connect(function()
-        desiredSpeed = 16
+local function bindSpeed(h)
+    if speedConnection then speedConnection:Disconnect() end
+    speedConnection = RunService.Heartbeat:Connect(function()
+        applySpeed(h)
     end)
-    task.wait(1)
-    applySpeed()
-end)
+end
+
+local function setupCharacter(char)
+    local h = char:WaitForChild("Humanoid")
+    bindSpeed(h)
+end
+
+if player.Character then setupCharacter(player.Character) end
+player.CharacterAdded:Connect(setupCharacter)
 
 -- Buttons Functions
 setSpeedBtn.MouseButton1Click:Connect(function()
     local val = tonumber(speedBox.Text)
-    if val then desiredSpeed = val end
+    if val then _G.DesiredSpeed = val end
 end)
 
 resetBtn.MouseButton1Click:Connect(function()
-    desiredSpeed = 16
+    _G.DesiredSpeed = 16
     speedBox.Text = "16"
 end)
 
@@ -347,7 +351,6 @@ end)
 local function onCharacterAdded(char)
     local humanoid = char:WaitForChild("Humanoid")
     humanoid.Died:Connect(function()
-        desiredSpeed = 16
         infiniteJump = false
         flying = false
         vertical = 0
