@@ -1,4 +1,4 @@
---// Universal Hack GUI v1.2 (Permanent Speed Fix, Fly, Teleport, Intro, Minimize)
+--// Universal Hack GUI v1.1 (Permanent Speed Fix, Fly, Teleport, Intro, Minimize)
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
@@ -7,7 +7,7 @@ local player = Players.LocalPlayer
 
 -- Variables
 if _G.DesiredSpeed == nil then
-    _G.DesiredSpeed = 16  -- Global so it survives death/reset
+    _G.DesiredSpeed = 16 -- Global so it survives death/reset
 end
 local infiniteJump = false
 local flying = false
@@ -53,6 +53,66 @@ end
 task.wait(3)
 introGui:Destroy()
 
+-- 🟢 INTRO BOX
+local introGui = Instance.new("ScreenGui")
+introGui.Name = "IntroGUI"
+introGui.Parent = player:WaitForChild("PlayerGui")
+
+local introFrame = Instance.new("Frame")
+introFrame.Size = UDim2.new(0,400,0,100)
+introFrame.Position = UDim2.new(0.5,-200,0.4,0)
+introFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+introFrame.BorderSizePixel = 0
+introFrame.Parent = introGui
+
+local introLabel = Instance.new("TextLabel")
+introLabel.Size = UDim2.new(1,0,1,0)
+introLabel.BackgroundTransparency = 1
+introLabel.TextColor3 = Color3.fromRGB(0,255,0)
+introLabel.Font = Enum.Font.SourceSansBold
+introLabel.TextSize = 24
+introLabel.Text = ""
+introLabel.TextWrapped = true
+introLabel.Parent = introFrame
+
+local message = "Bypassing BYFRON... "
+for i = 1, #message do
+    introLabel.Text = string.sub(message, 1, i)
+    task.wait(0.05)
+end
+task.wait(3)
+introGui:Destroy()
+
+-- 🟢 INTRO BOX
+local introGui = Instance.new("ScreenGui")
+introGui.Name = "IntroGUI"
+introGui.Parent = player:WaitForChild("PlayerGui")
+
+local introFrame = Instance.new("Frame")
+introFrame.Size = UDim2.new(0,400,0,100)
+introFrame.Position = UDim2.new(0.5,-200,0.4,0)
+introFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+introFrame.BorderSizePixel = 0
+introFrame.Parent = introGui
+
+local introLabel = Instance.new("TextLabel")
+introLabel.Size = UDim2.new(1,0,1,0)
+introLabel.BackgroundTransparency = 1
+introLabel.TextColor3 = Color3.fromRGB(0,255,0)
+introLabel.Font = Enum.Font.SourceSansBold
+introLabel.TextSize = 24
+introLabel.Text = ""
+introLabel.TextWrapped = true
+introLabel.Parent = introFrame
+
+local message = "Bypassing Game-Cheat..."
+for i = 1, #message do
+    introLabel.Text = string.sub(message, 1, i)
+    task.wait(0.05)
+end
+task.wait(3)
+introGui:Destroy()
+
 -- 🟢 MAIN GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "HackGUI"
@@ -78,7 +138,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,-30,1,0)
 title.Position = UDim2.new(0,10,0,0)
 title.BackgroundTransparency = 1
-title.Text = "⚡ Universal Hack v1.2"
+title.Text = "⚡ Universal Hack V 1.1"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 18
