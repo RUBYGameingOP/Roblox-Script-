@@ -133,7 +133,7 @@ IYBtn.MouseButton1Click:Connect(function()
         iyLoaded = true
         IYBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         IYBtn.Text = "LOADED"
-        loadstring(game:HttpGet('https://raw.githubusercontent.com'))()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
     end
 end)
 
