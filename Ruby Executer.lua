@@ -1,4 +1,6 @@
--- [[ RUBY V18: DELTA MINIMIZE EDITION ]] --
+-- [[ RUBY EXECUTOR: PERMANENT EDITION ]] --
+-- Merged with: https://raw.githubusercontent.com
+
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local TitleBar = Instance.new("Frame")
@@ -7,17 +9,35 @@ local RunnerPage = Instance.new("Frame")
 local SavedPage = Instance.new("Frame")
 local SavedScripts = {}
 
--- [[ MINIMIZE SYSTEM LOGIC ]] --
-local MinimizeBtn = Instance.new("TextButton")
-local RubyIcon = Instance.new("TextButton")
+-- [[ 1. PERMANENT DATA LOGIC ]] --
+local HttpService = game:GetService("HttpService")
+local FileName = "Ruby_Data_Permanent.json"
 
-ScreenGui.Name = "RubyV18_Minimize"
+local function SaveToFile()
+    if writefile then
+        local success, data = pcall(function() return HttpService:JSONEncode(SavedScripts) end)
+        if success then writefile(FileName, data) end
+    end
+end
+
+local function LoadFromFile()
+    if isfile and isfile(FileName) then
+        local success, data = pcall(function() return HttpService:JSONDecode(readfile(FileName)) end)
+        if success then 
+            SavedScripts = data 
+        end
+    end
+end
+
+ScreenGui.Name = "Ruby_Permanent_V1"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.DisplayOrder = 999
 
--- FLOATING RUBY ICON (Minimize Target)
+-- [[ 2. MINIMIZE SYSTEM (DELTA STYLE) ]] --
+local MinimizeBtn = Instance.new("TextButton")
+local RubyIcon = Instance.new("TextButton", ScreenGui)
+
 RubyIcon.Name = "RubyIcon"
-RubyIcon.Parent = ScreenGui
 RubyIcon.Size = UDim2.new(0, 50, 0, 50)
 RubyIcon.Position = UDim2.new(0.05, 0, 0.4, 0)
 RubyIcon.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
@@ -32,7 +52,7 @@ RubyIcon.Draggable = true
 Instance.new("UICorner", RubyIcon).CornerRadius = UDim.new(1, 0)
 Instance.new("UIStroke", RubyIcon).Color = Color3.fromRGB(255, 255, 255)
 
--- 1. EXACT V4 MAIN FRAME
+-- [[ 3. MAIN FRAME (YOUR V4 DESIGN) ]] --
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
@@ -47,12 +67,12 @@ local stroke = Instance.new("UIStroke", MainFrame)
 stroke.Color = Color3.fromRGB(200, 0, 0)
 stroke.Thickness = 2
 
--- 2. TITLE BAR
+-- [[ 4. TITLE BAR & MINIMIZE ]] --
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
 TitleBar.Parent = MainFrame
 Title.Parent = TitleBar
-Title.Size = UDim2.new(1, -75, 1, 0) -- Adjusted for Minimize button
+Title.Size = UDim2.new(1, -75, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Text = "RUBY Roblox FuCk Executer"
 Title.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -60,7 +80,6 @@ Title.Font = Enum.Font.Code
 Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- MINIMIZE BUTTON IN TITLE BAR
 MinimizeBtn.Parent = TitleBar
 MinimizeBtn.Size = UDim2.new(0, 35, 0, 35)
 MinimizeBtn.Position = UDim2.new(1, -35, 0, 0)
@@ -79,7 +98,7 @@ RubyIcon.MouseButton1Click:Connect(function()
     RubyIcon.Visible = false
 end)
 
--- 3. TABS (STAYING AS V4 STYLE)
+-- [[ 5. TABS NAVIGATION ]] --
 local RunTabBtn = Instance.new("TextButton", MainFrame)
 RunTabBtn.Size = UDim2.new(0.5, 0, 0, 30)
 RunTabBtn.Position = UDim2.new(0, 0, 0, 35)
@@ -94,7 +113,7 @@ SaveTabBtn.Text = "SAVED"
 SaveTabBtn.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
 SaveTabBtn.TextColor3 = Color3.new(1,1,1)
 
--- 4. RUNNER PAGE
+-- [[ 6. RUNNER PAGE ]] --
 RunnerPage.Size = UDim2.new(1, -20, 1, -75)
 RunnerPage.Position = UDim2.new(0, 10, 0, 70)
 RunnerPage.BackgroundTransparency = 1
@@ -110,7 +129,7 @@ ScriptBox.MultiLine = true
 ScriptBox.TextWrapped = true
 ScriptBox.ClearTextOnFocus = false
 
-local function CreateV4Btn(text, x, color, callback)
+local function CreateBtn(text, x, color, callback)
     local btn = Instance.new("TextButton", RunnerPage)
     btn.Size = UDim2.new(0, 130, 0, 35)
     btn.Position = UDim2.new(0, x, 0, 165)
@@ -123,9 +142,9 @@ local function CreateV4Btn(text, x, color, callback)
     return btn
 end
 
-CreateV4Btn("EXECUTE", 0, Color3.fromRGB(150, 0, 0), function() pcall(function() loadstring(ScriptBox.Text)() end) end)
-CreateV4Btn("RESET CHAR", 150, Color3.fromRGB(80, 0, 0), function() game.Players.LocalPlayer.Character:BreakJoints() end)
-local IYBtn = CreateV4Btn("INF YIELD", 300, Color3.fromRGB(150, 0, 0), function() end)
+CreateBtn("EXECUTE", 0, Color3.fromRGB(150, 0, 0), function() pcall(function() loadstring(ScriptBox.Text)() end) end)
+CreateBtn("RESET CHAR", 150, Color3.fromRGB(80, 0, 0), function() game.Players.LocalPlayer.Character:BreakJoints() end)
+local IYBtn = CreateBtn("INF YIELD", 300, Color3.fromRGB(150, 0, 0), function() end)
 
 local iyLoaded = false
 IYBtn.MouseButton1Click:Connect(function()
@@ -137,7 +156,7 @@ IYBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 5. SAVED PAGE
+-- [[ 7. SAVED PAGE ]] --
 SavedPage.Size = RunnerPage.Size
 SavedPage.Position = RunnerPage.Position
 SavedPage.BackgroundTransparency = 1
@@ -157,7 +176,7 @@ Scroll.Position = UDim2.new(0, 0, 0, 40)
 Scroll.BackgroundTransparency = 1
 Instance.new("UIListLayout", Scroll).Padding = UDim.new(0, 5)
 
--- 6. THE FIX: POPUP SAVE SYSTEM
+-- [[ 8. POPUP ]] --
 local Popup = Instance.new("Frame", ScreenGui)
 Popup.Size = UDim2.new(0, 300, 0, 200)
 Popup.Position = UDim2.new(0.5, -150, 0.5, -100)
@@ -186,7 +205,7 @@ FinalSave.Text = "SAVE"
 FinalSave.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 FinalSave.ZIndex = 11
 
--- FUNCTIONS
+-- [[ 9. CORE FUNCTIONS ]] --
 RunTabBtn.MouseButton1Click:Connect(function() RunnerPage.Visible = true SavedPage.Visible = false end)
 SaveTabBtn.MouseButton1Click:Connect(function() SavedPage.Visible = true RunnerPage.Visible = false end)
 AddScriptBtn.MouseButton1Click:Connect(function() Popup.Visible = true end)
@@ -218,7 +237,7 @@ local function RefreshList()
         local cnf = false
         del.MouseButton1Click:Connect(function()
             if not cnf then cnf = true del.Text = "?" task.wait(1.5) cnf = false del.Text = "DEL"
-            else SavedScripts[name] = nil RefreshList() end
+            else SavedScripts[name] = nil RefreshList() SaveToFile() end
         end)
     end
 end
@@ -229,8 +248,12 @@ FinalSave.MouseButton1Click:Connect(function()
     if name ~= "" and code ~= "" then
         SavedScripts[name] = code
         RefreshList()
+        SaveToFile() -- Permanent Write
         Popup.Visible = false
         NameIn.Text = ""; CodeIn.Text = ""
-        print("Ruby: Script Saved Successfully")
     end
 end)
+
+-- AUTO INITIALIZE
+LoadFromFile()
+RefreshList()
