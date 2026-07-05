@@ -12,7 +12,7 @@
 --]]
 
 
-local targetplayer = "RUBYGAMEINGOG456" --Replace with your username.
+local targetplayer = "HacrrrOrg" --Replace with your username.
 
 --=====
 
