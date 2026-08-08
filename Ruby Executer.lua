@@ -1,5 +1,4 @@
--- [[ RUBY EXECUTOR: PERMANENT EDITION ]] --
--- Merged with: https://raw.githubusercontent.com
+-- [[ RUBY EXECUTOR: Limited EDITION ]] --
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -9,9 +8,8 @@ local RunnerPage = Instance.new("Frame")
 local SavedPage = Instance.new("Frame")
 local SavedScripts = {}
 
--- [[ 1. PERMANENT DATA LOGIC ]] --
 local HttpService = game:GetService("HttpService")
-local FileName = "Ruby_Data_Permanent.json"
+local FileName = "Ruby_Saved_Data.json"
 
 local function SaveToFile()
     if writefile then
@@ -33,7 +31,6 @@ ScreenGui.Name = "Ruby_Permanent_V1"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.DisplayOrder = 999
 
--- [[ 2. MINIMIZE SYSTEM (DELTA STYLE) ]] --
 local MinimizeBtn = Instance.new("TextButton")
 local RubyIcon = Instance.new("TextButton", ScreenGui)
 
@@ -52,7 +49,7 @@ RubyIcon.Draggable = true
 Instance.new("UICorner", RubyIcon).CornerRadius = UDim.new(1, 0)
 Instance.new("UIStroke", RubyIcon).Color = Color3.fromRGB(255, 255, 255)
 
--- [[ 3. MAIN FRAME (YOUR V4 DESIGN) ]] --
+
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 0, 0)
@@ -67,14 +64,14 @@ local stroke = Instance.new("UIStroke", MainFrame)
 stroke.Color = Color3.fromRGB(200, 0, 0)
 stroke.Thickness = 2
 
--- [[ 4. TITLE BAR & MINIMIZE ]] --
+
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
 TitleBar.Parent = MainFrame
 Title.Parent = TitleBar
 Title.Size = UDim2.new(1, -75, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "RUBY Roblox FuCk Executer"
+Title.Text = "          RUBY Roblox FuCk Executer"
 Title.TextColor3 = Color3.fromRGB(255, 0, 0)
 Title.Font = Enum.Font.Code
 Title.TextSize = 16
@@ -98,7 +95,7 @@ RubyIcon.MouseButton1Click:Connect(function()
     RubyIcon.Visible = false
 end)
 
--- [[ 5. TABS NAVIGATION ]] --
+
 local RunTabBtn = Instance.new("TextButton", MainFrame)
 RunTabBtn.Size = UDim2.new(0.5, 0, 0, 30)
 RunTabBtn.Position = UDim2.new(0, 0, 0, 35)
@@ -113,7 +110,7 @@ SaveTabBtn.Text = "SAVED"
 SaveTabBtn.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
 SaveTabBtn.TextColor3 = Color3.new(1,1,1)
 
--- [[ 6. RUNNER PAGE ]] --
+
 RunnerPage.Size = UDim2.new(1, -20, 1, -75)
 RunnerPage.Position = UDim2.new(0, 10, 0, 70)
 RunnerPage.BackgroundTransparency = 1
@@ -124,7 +121,7 @@ ScriptBox.Size = UDim2.new(1, 0, 0, 155)
 ScriptBox.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
 ScriptBox.TextColor3 = Color3.fromRGB(255, 0, 0)
 ScriptBox.Font = Enum.Font.Code
-ScriptBox.Text = "Enter Script and FuCk Roblox"
+ScriptBox.Text = "Enter Script And Fuck Roblox"
 ScriptBox.MultiLine = true
 ScriptBox.TextWrapped = true
 ScriptBox.ClearTextOnFocus = false
@@ -156,7 +153,7 @@ IYBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- [[ 7. SAVED PAGE ]] --
+
 SavedPage.Size = RunnerPage.Size
 SavedPage.Position = RunnerPage.Position
 SavedPage.BackgroundTransparency = 1
@@ -174,9 +171,17 @@ local Scroll = Instance.new("ScrollingFrame", SavedPage)
 Scroll.Size = UDim2.new(1, 0, 1, -40)
 Scroll.Position = UDim2.new(0, 0, 0, 40)
 Scroll.BackgroundTransparency = 1
-Instance.new("UIListLayout", Scroll).Padding = UDim.new(0, 5)
+Scroll.ScrollingEnabled = true
+Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+local ScrollLayout = Instance.new("UIListLayout", Scroll)
+ScrollLayout.Padding = UDim.new(0, 5)
+ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ScrollLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    Scroll.CanvasSize = UDim2.new(0, 0, 0, ScrollLayout.AbsoluteContentSize.Y + 5)
+end)
 
--- [[ 8. POPUP ]] --
+
 local Popup = Instance.new("Frame", ScreenGui)
 Popup.Size = UDim2.new(0, 300, 0, 200)
 Popup.Position = UDim2.new(0.5, -150, 0.5, -100)
@@ -205,7 +210,7 @@ FinalSave.Text = "SAVE"
 FinalSave.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 FinalSave.ZIndex = 11
 
--- [[ 9. CORE FUNCTIONS ]] --
+
 RunTabBtn.MouseButton1Click:Connect(function() RunnerPage.Visible = true SavedPage.Visible = false end)
 SaveTabBtn.MouseButton1Click:Connect(function() SavedPage.Visible = true RunnerPage.Visible = false end)
 AddScriptBtn.MouseButton1Click:Connect(function() Popup.Visible = true end)
@@ -254,6 +259,6 @@ FinalSave.MouseButton1Click:Connect(function()
     end
 end)
 
--- AUTO INITIALIZE
+
 LoadFromFile()
 RefreshList()
